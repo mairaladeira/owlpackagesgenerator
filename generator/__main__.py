@@ -2,6 +2,7 @@ __author__ = 'Maira'
 import re
 from generator.lib.OWL import OWL
 from generator.lib.RDF import RDF
+from generator.lib.Notation3 import Notation3
 import time
 
 
@@ -55,7 +56,7 @@ def create_package_owl_instance(owl_obj):
     packages = set()
     used_packages = set()
     for p in pkgs:
-        if i < 100:
+        if i < 1000000:
             print(i)
             i += 1
             packages.add(p)
@@ -150,13 +151,13 @@ def create_package_rdf_instance(rdf_obj):
     packages = set()
     used_packages = set()
     for p in pkgs:
-        if i < 10000000:
+        if i < 100000000:
             print(i)
             i += 1
             packages.add(p)
             package_properties = []
             p_content = pkgs[p]
-            p_type = 'debianPackage'
+            p_type = ['debianPackage']
             if 'Maintainer' in p_content:
                 [m_name, m_email] = format_maintainer(p_content['Maintainer'])
                 if m_name not in maintainers:
@@ -166,14 +167,14 @@ def create_package_rdf_instance(rdf_obj):
                 elif m_email != '':
                     maintainers[m_name].add(m_email)
                 if 'debian' in m_name.lower():
-                    p_type = 'debianCommunity'
+                    p_type.append('debianCommunity')
                 package_properties.append(['hasMaintainer', 'resource', m_name])
             if 'Architecture' in p_content:
                 architectures.add(p_content['Architecture'])
                 package_properties.append(['hasArchitecture', 'resource', p_content['Architecture']])
             if 'Description' in p_content:
                 if 'window manager' in p_content['Description'].lower():
-                    p_type = 'windowManager'
+                    p_type.append('windowManager')
                 package_properties.append(['description', 'datatype', p_content['Description'], 'string'])
             if 'Version' in p_content:
                 package_properties.append(['version', 'datatype', p_content['Version'], 'string'])
@@ -202,38 +203,42 @@ def create_package_rdf_instance(rdf_obj):
                 for s in suggests:
                     package_properties.append(['suggests', 'resource', s])
                     used_packages.add(s)
-            rdf_obj.new_named_individual(p, p_type, package_properties)
+            for pt in p_type:
+                rdf_obj.new_named_individual(p, pt, package_properties)
         else:
             break
 
     for a in architectures:
         rdf_obj.new_named_individual(a, 'architecture', [])
+    print(str(len(used_packages))+' used packages')
+    print(str(len(packages))+' declared packages')
     for p in used_packages:
         if p not in packages:
             package_properties = []
             p_type = 'debianPackage'
             try:
                 p_content = pkgs[p]
+                if 'Maintainer' in p_content:
+                    [m_name, m_email] = format_maintainer(p_content['Maintainer'])
+                    if m_name not in maintainers:
+                        maintainers[m_name] = set()
+                        if m_email != '':
+                            maintainers[m_name].add(m_email)
+                    elif m_email != '':
+                        maintainers[m_name].add(m_email)
+                    if 'debian' in m_name.lower():
+                        p_type = 'debianCommunity'
+                    package_properties.append(['hasMaintainer', 'resource', m_name])
+                architectures.add(p_content['Architecture'])
+                package_properties.append(['hasArchitecture', 'resource', p_content['Architecture']])
+                package_properties.append(['description', 'datatype', p_content['Description'], 'string'])
+                if 'window manager' in p_content['Description'].lower():
+                    p_type = 'windowManager'
+                package_properties.append(['version', 'datatype', p_content['Version'], 'string'])
             except:
                 print('Package '+str(p)+' does not exist!')
                 rdf_obj.new_named_individual(p, 'debianPackage', package_properties)
-            if 'Maintainer' in p_content:
-                [m_name, m_email] = format_maintainer(p_content['Maintainer'])
-                if m_name not in maintainers:
-                    maintainers[m_name] = set()
-                    if m_email != '':
-                        maintainers[m_name].add(m_email)
-                elif m_email != '':
-                    maintainers[m_name].add(m_email)
-                if 'debian' in m_name.lower():
-                    p_type = 'debianCommunity'
-                package_properties.append(['hasMaintainer', 'resource', m_name])
-            architectures.add(p_content['Architecture'])
-            package_properties.append(['hasArchitecture', 'resource', p_content['Architecture']])
-            package_properties.append(['description', 'datatype', p_content['Description'], 'string'])
-            if 'window manager' in p_content['Description'].lower():
-                p_type = 'windowManager'
-            package_properties.append(['version', 'datatype', p_content['Version'], 'string'])
+                continue
             rdf_obj.new_named_individual(p, p_type, package_properties)
     for m in maintainers:
         print('Processing maintainer: '+m)
@@ -284,6 +289,9 @@ def main(file_type):
         rdf_structure = RDF('rdf_ontology', 'rdf_ontology.owl')
         create_package_rdf_instance(rdf_structure)
         rdf_structure.end_rdf()
+    elif file_type == 'n3':
+        n3_structure = Notation3('n3_ontology', 'n3_ontology.owl')
+        n3_structure.end_notation3()
     print("--- %s seconds ---" % (time.time() - start_time))
 
 if __name__ == "__main__":

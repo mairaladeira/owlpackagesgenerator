@@ -1,5 +1,5 @@
 __author__ = 'Maira'
-
+from html import escape
 
 class RDF:
     """
@@ -13,13 +13,17 @@ class RDF:
         self.o_property = ''
         self.dt_property = ''
         self.classes = ''
-        self.named_individual = ''
+        self.hasMaintainer = set()
         self.start_rdf()
         self.start_ontology()
         self.declare_object_properties()
         self.declare_data_type_property()
         self.declare_classes()
-
+        self.file = open(self.output_file, 'w+')
+        self.file.write(self.rdf)
+        self.file.write(self.o_property)
+        self.file.write(self.dt_property)
+        self.file.write(self.classes)
 
     def start_rdf(self):
         """
@@ -48,15 +52,11 @@ class RDF:
         Ends the ontology and saves it on the output file
         """
         print('generating OWL ontology file...')
-        file = open(self.output_file, 'w+')
-        file.write(self.rdf)
-        file.write(self.o_property)
-        file.write(self.dt_property)
-        file.write(self.classes)
-        file.write(self.named_individual)
-        file.write('</rdf:RDF>')
-        file.close()
+        self.file.write('</rdf:RDF>')
+        self.file.close()
         print('RDF ontology file generated!')
+        for m in self.hasMaintainer:
+            print(m)
         return
 
     def new_object_property(self, prop, d, r, t='', sub_obj_prop='', union_d=False, union_r=False, sub_prop=False):
@@ -222,27 +222,33 @@ class RDF:
         ind = ind.split('(')
         ind = ind[0].split('<')
         ind = ind[0].split('|')
-        ind = ind[0].replace('<', '&lt;')
-        ind = ind.replace('>', '&gt;')
-        ind = ind.replace(' ', '_')
-        self.named_individual += '\t<!-- '+self.url+self.namespace+'.owl#'+ind+' -->\n\n\n'
-        self.named_individual += '\t<NamedIndividual rdf:about="&'+self.namespace+';'+ind+'">\n'
-        self.named_individual += '\t\t<rdf:type rdf:resource="&'+self.namespace+';'+t+'"/>\n'
+        ind = ind[0].replace('/', '_or_').replace('"', '').replace("'", "").strip().replace(' ', '_')
+        ind = escape(ind)
+        if ind == '':
+            return
+        named_individual = '\t<!-- '+self.url+self.namespace+'.owl#'+ind+' -->\n\n\n'
+        named_individual += '\t<NamedIndividual rdf:about="&'+self.namespace+';'+ind+'">\n'
+        named_individual += '\t\t<rdf:type rdf:resource="&'+self.namespace+';'+t+'"/>\n'
         for p in props:
             #properties should be a list of the type:
             # [name_prop, type(resource or datatype), val, datatype_type(optional)]
             name = p[0].split('(')
             name = name[0].split('<')
             name = name[0].split('|')
-            name = name[0].replace('<', '&lt;').replace('&', '&amp;').replace('>', '&gt;').strip().replace(' ', '_')
+            name = name[0].replace('/', '_or_').replace('"', '').replace("'", "").strip().replace(' ', '_')
+            name = escape(name)
             val = p[2].split('(')
             val = val[0].split('<')
             val = val[0].split('|')
-            val = val[0].replace('<', '&lt;').replace('&', '&amp;').replace('>', '&gt;').strip().replace(' ', '_')
+            val = val[0].replace('/', '_or_').replace('"', '').replace("'", "").strip().replace(' ', '_')
+            val = escape(val)
+            if name == 'hasMaintainer':
+                self.hasMaintainer.add(val)
             if p[1] == 'datatype':
-                self.named_individual += '\t\t<'+self.namespace+':'+name+' ' \
-                                         'rdf:datatype="&xsd;'+p[3]+'">'+val+'</'+self.namespace+':'+name+'>\n'
-            if p[1] == 'resource':
-                self.named_individual += '\t\t<'+self.namespace+':'+name+' ' \
-                                         'rdf:resource="&'+self.namespace+';'+val+'"/>\n'
-        self.named_individual += '\t</NamedIndividual>\n\n\n'
+                named_individual += '\t\t<'+self.namespace+':'+name+' ' \
+                                    'rdf:datatype="&xsd;'+p[3]+'">'+val+'</'+self.namespace+':'+name+'>\n'
+            if p[1] == 'resource' and name != '':
+                named_individual += '\t\t<'+self.namespace+':'+name+' ' \
+                                    'rdf:resource="&'+self.namespace+';'+val+'"/>\n'
+        named_individual += '\t</NamedIndividual>\n\n\n'
+        self.file.write(named_individual)
