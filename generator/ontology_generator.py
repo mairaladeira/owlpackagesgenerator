@@ -306,7 +306,7 @@ if __name__ == "__main__":
         args = sys.argv
         if args[1] != '-p' or args[3] != '-t' or args[5] != '-o':
             print(' Wrong arguments instantiation.')
-            print(' Correct use: python owl_packages_generator.py -p <Packages_file> -t <rdf_or_n3> -o <Output_file>')
+            print(' Correct use: python ontology_generator.py -p <Packages_file> -t <rdf_or_n3> -o <Output_file>')
             sys.exit()
         try:
             f = open(args[2])
@@ -324,6 +324,6 @@ if __name__ == "__main__":
             output_file = args[6]
         except:
             print(' Output file is mandatory!')
-            print(' Correct use: python owl_packages_generator.py -p <Packages_file> -t <rdf_or_n3> -o <Output_file>')
+            print(' Correct use: python ontology_generator.py -p <Packages_file> -t <rdf_or_n3> -o <Output_file>')
             sys.exit()
     main(f, int(f_type), output_file)
