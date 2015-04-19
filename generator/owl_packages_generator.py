@@ -3,6 +3,7 @@ import re
 from RDF import RDF
 from Notation3 import Notation3
 import time
+import sys
 
 
 def process_package(package):
@@ -30,11 +31,10 @@ def process_package(package):
     return packages_data
 
 
-def read_package(file):
+def read_package(f_obj):
     print('reading packages file...')
-    with open(file) as f:
-        content = f.read()
-        f.close()
+    content = f_obj.read()
+    f_obj.close()
     packages = content.split('\n\n')
     packages_d = dict()
     print('processing packages...')
@@ -45,8 +45,8 @@ def read_package(file):
     return packages_d
 
 
-def create_packages_instances(owl_obj, t):
-    pkgs = read_package('Packages')
+def create_packages_instances(f_obj, owl_obj, t):
+    pkgs = read_package(f_obj)
     print(str(len(pkgs))+' packages generated')
     print('creating ontology instances...')
     maintainers = dict()
@@ -55,7 +55,7 @@ def create_packages_instances(owl_obj, t):
     packages = set()
     used_packages = set()
     for p in pkgs:
-        if i < 100000000:
+        if i < 100:
             print('processing pack: '+str(i))
             i += 1
             packages.add(p)
@@ -262,18 +262,68 @@ def format_maintainer(maintainer):
     return maintainers_list
 
 
-def main(file_type):
+def main(f_obj, file_type, result_file):
     start_time = time.time()
-    if file_type == 'rdf':
-        rdf_structure = RDF('rdf_ontology_test', 'rdf_ontology_test.owl')
-        create_packages_instances(rdf_structure, 'rdf')
+    if file_type == 1:
+        rdf_structure = RDF(result_file, result_file+'.owl')
+        create_packages_instances(f_obj, rdf_structure, 'rdf')
         rdf_structure.end_rdf()
-    elif file_type == 'n3':
-        n3_structure = Notation3('n3_ontology', 'n3_ontology.owl')
-        create_packages_instances(n3_structure, 'n3')
+    elif file_type == 2:
+        n3_structure = Notation3(result_file, result_file+'.ttl')
+        create_packages_instances(f_obj, n3_structure, 'n3')
         n3_structure.end_notation3()
     print("--- %s seconds ---" % (time.time() - start_time))
 
 if __name__ == "__main__":
-    f_type = input("type of file: \n")
-    main(f_type)
+    if len(sys.argv) == 1:
+        print('-----------------------------------------------------------------')
+        print('-----------------------------------------------------------------')
+        print(' Welcome to the OWL package generator.')
+        print(' Please inform the name of your Packages\' file with its path.')
+        print(' It is really important to have the correct path for your file.')
+        file_path = input(" Packages' file: ")
+        correct_file = False
+        while not correct_file:
+            try:
+                f = open(file_path)
+                correct_file = True
+            except:
+                print(' File not found! Try again!')
+                file_path = input(" Path to the file:\n")
+        print(' What type of owl file do you want to generate? 1 - RDF, 2 - Notation 3 (turtle)')
+        f_type = input(" Type of file: ")
+        correct_type = False
+        while not correct_type:
+            if int(f_type) == 1 or int(f_type) == 2:
+                correct_type = True
+            else:
+                print(' File type not available! Possible options: 1 - RDF, 2 - Notation 3 (turtle). Try Again..')
+                f_type = input(" Type of file: ")
+        output_file = input(' Name of output file (the extension will be generated automatically): ')
+        print('-----------------------------------------------------------------')
+        print('-----------------------------------------------------------------')
+    else:
+        args = sys.argv
+        if args[1] != '-p' or args[3] != '-t' or args[5] != '-o':
+            print(' Wrong arguments instantiation.')
+            print(' Correct use: python owl_packages_generator.py -p <Packages_file> -t <rdf_or_n3> -o <Output_file>')
+            sys.exit()
+        try:
+            f = open(args[2])
+        except:
+            print(' Packages file not found! Check if the path is correct.')
+            sys.exit()
+        if args[4].lower() == 'rdf':
+            f_type = 1
+        elif args[4].lower() == 'n3':
+            f_type = 2
+        else:
+            print(' Wrong type for output file! Possible values: rdf or n3.')
+            sys.exit()
+        try:
+            output_file = args[6]
+        except:
+            print(' Output file is mandatory!')
+            print(' Correct use: python owl_packages_generator.py -p <Packages_file> -t <rdf_or_n3> -o <Output_file>')
+            sys.exit()
+    main(f, int(f_type), output_file)

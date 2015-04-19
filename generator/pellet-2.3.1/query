@@ -1,0 +1,6 @@
+PREFIX url: <http://www.semanticweb.org/ontologies/2015/3/rdf_ontology.owl#>
+SELECT ?dependencies
+WHERE {
+	url:ofono-dev a url:debianPackage.
+	url:ofono-dev url:depends ?dependencies.
+}

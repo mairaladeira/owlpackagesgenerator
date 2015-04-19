@@ -68,10 +68,24 @@ class Notation3:
         for dom in d:
             self.o_property += '\trdfs:domain ' + self.namespace + ':' + dom + ' ;\n\n'
         for rang in r:
-            if j < amount_r:
-                self.o_property += '\trdfs:range ' + self.namespace + ':' + rang + ' ;\n\n'
-            else:
+            """
+            rdfs:range [ rdf:type owl:Class ;
+                                       owl:unionOf ( Ontology1428188787135:architecture
+                                                     Ontology1428188787135:maintainer
+                                                   )
+                                     ] .
+
+            """
+            if amount_r == 1:
                 self.o_property += '\trdfs:range ' + self.namespace + ':' + rang + ' .\n\n\n\n'
+            elif j == 1:
+                self.o_property += '\trdfs:range [ rdf:type owl:Class ;\n'
+                self.o_property += '\t\t\t\t\towl:unionOf ( '+self.namespace+':'+rang+'\n'
+            else:
+                self.o_property += '\t\t\t\t\t\t\t'+self.namespace+':'+rang
+            if j == amount_r and amount_r != 1:
+                self.o_property += '\t\t\t\t\t)\n'
+                self.o_property += '\t\t] .\n\n\n\n'
             j += 1
 
     def declare_object_properties(self):
@@ -221,7 +235,7 @@ class Notation3:
         ind = ind[0].split('<')
         ind = ind[0].split('|')
         ind = ind[0].replace('/', '_or_').replace('+', '_').replace('"', '').replace("'", "") \
-            .replace('~', '').replace('.', '').strip().replace(' ', '_').replace('&', '_and_')
+            .replace('~', '').replace('.', '_').strip().replace(' ', '_').replace('&', '_and_')
         ind = ind.replace('\u00a1', 'a').replace('\u00b1', '').replace('\u00c3', 'n')
         if ind == '':
             return
@@ -247,7 +261,7 @@ class Notation3:
                 val = val[0].split('<')
                 val = val[0].split('|')
                 val = val[0].replace('/', '_or_').replace('+', '_').replace('"', '').replace("'", "") \
-                    .replace('~', '').replace('.', '').strip().replace(' ', '_').replace('&', '_and_')
+                    .replace('~', '').replace('.', '_').strip().replace(' ', '_').replace('&', '_and_')
                 val = val.replace('\u00a1', 'a').replace('\u00b1', '').replace('\u00c3', 'n')
                 if prop_type == 'resource':
                     if i == 1:

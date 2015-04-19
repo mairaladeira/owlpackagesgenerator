@@ -220,7 +220,7 @@ class RDF:
         ind = ind[0].split('<')
         ind = ind[0].split('|')
         ind = ind[0].replace('/', '_or_').replace('+', '_').replace('"', '').replace("'", "") \
-            .replace('~', '').replace('.', '').strip().replace(' ', '_').replace('&', '_and_')
+            .replace('~', '').replace('.', '_').strip().replace(' ', '_').replace('&', '_and_')
         ind = ind.replace('\u00a1', 'a').replace('\u00b1', '').replace('\u00c3', 'n')
         if ind == '':
             return
@@ -235,7 +235,7 @@ class RDF:
             val = val[0].split('<')
             val = val[0].split('|')
             val = val[0].replace('/', '_or_').replace('+', '_').replace('"', '').replace("'", "") \
-                .replace('~', '').replace('.', '').strip().replace(' ', '_').replace('&', '_and_')
+                .replace('~', '').replace('.', '_').strip().replace(' ', '_').replace('&', '_and_')
             val = val.replace('\u00a1', 'a').replace('\u00b1', '').replace('\u00c3', 'n')
 
             if p[1] == 'datatype':
