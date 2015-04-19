@@ -1,6 +1,7 @@
 __author__ = 'Maira'
 from html import escape
 
+
 class RDF:
     """
     This class has all the functionality to create and populate the RDF ontology
@@ -13,7 +14,6 @@ class RDF:
         self.o_property = ''
         self.dt_property = ''
         self.classes = ''
-        self.hasMaintainer = set()
         self.start_rdf()
         self.start_ontology()
         self.declare_object_properties()
@@ -55,9 +55,6 @@ class RDF:
         self.file.write('</rdf:RDF>')
         self.file.close()
         print('RDF ontology file generated!')
-        for m in self.hasMaintainer:
-            print(m)
-        return
 
     def new_object_property(self, prop, d, r, t='', sub_obj_prop='', union_d=False, union_r=False, sub_prop=False):
         """
@@ -222,8 +219,9 @@ class RDF:
         ind = ind.split('(')
         ind = ind[0].split('<')
         ind = ind[0].split('|')
-        ind = ind[0].replace('/', '_or_').replace('"', '').replace("'", "").strip().replace(' ', '_')
-        ind = escape(ind)
+        ind = ind[0].replace('/', '_or_').replace('+', '_').replace('"', '').replace("'", "") \
+            .replace('~', '').replace('.', '').strip().replace(' ', '_').replace('&', '_and_')
+        ind = ind.replace('\u00a1', 'a').replace('\u00b1', '').replace('\u00c3', 'n')
         if ind == '':
             return
         named_individual = '\t<!-- '+self.url+self.namespace+'.owl#'+ind+' -->\n\n\n'
@@ -232,18 +230,14 @@ class RDF:
         for p in props:
             #properties should be a list of the type:
             # [name_prop, type(resource or datatype), val, datatype_type(optional)]
-            name = p[0].split('(')
-            name = name[0].split('<')
-            name = name[0].split('|')
-            name = name[0].replace('/', '_or_').replace('"', '').replace("'", "").strip().replace(' ', '_')
-            name = escape(name)
+            name = p[0]
             val = p[2].split('(')
             val = val[0].split('<')
             val = val[0].split('|')
-            val = val[0].replace('/', '_or_').replace('"', '').replace("'", "").strip().replace(' ', '_')
-            val = escape(val)
-            if name == 'hasMaintainer':
-                self.hasMaintainer.add(val)
+            val = val[0].replace('/', '_or_').replace('+', '_').replace('"', '').replace("'", "") \
+                .replace('~', '').replace('.', '').strip().replace(' ', '_').replace('&', '_and_')
+            val = val.replace('\u00a1', 'a').replace('\u00b1', '').replace('\u00c3', 'n')
+
             if p[1] == 'datatype':
                 named_individual += '\t\t<'+self.namespace+':'+name+' ' \
                                     'rdf:datatype="&xsd;'+p[3]+'">'+val+'</'+self.namespace+':'+name+'>\n'
