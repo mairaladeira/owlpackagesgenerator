@@ -6,14 +6,14 @@ Laboratory work for the DMKM course: Ontology and semantic web 2015.
 Functionality:
 --------------
 This project:
-    generates and populates a Packages ontology in rdf and notation 3 (turtle).
-    Reasoners on the ontology in order to determine:
-    * Debian Community Packages
-    * Window Manager Packages
-    * The *Conflicts* of an input package
-    * The *Dependencies* of an input package
-    * The *Suggestions* of an input package
-    * The *Recommendations* of an input package
+   * generates and populates a Packages ontology in rdf and notation 3 (turtle).
+   * Reasoners on the ontology in order to determine:
+      * Debian Community Packages
+      * Window Manager Packages
+      * The *Conflicts* of an input package
+      * The *Dependencies* of an input package
+      * The *Suggestions* of an input package
+      * The *Recommendations* of an input package
 
 How to use:
 -----------
