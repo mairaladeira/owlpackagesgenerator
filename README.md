@@ -21,9 +21,9 @@ To run the ontology_generator.py file:
 ```
 python ontology_generator.py -p <Packages_file> -t <rdf_or_n3> -o <Output_file>
 ```
-    * Where *Packages_file* is the file that contains the linux files supposed to populate the ontology
-    * *rdf_or_n3* is the type of file to be generated (Should be replaced by rdf or n3)
-    * *Output_file* is the file to be generated, *without* the extension. (The program generates .owl files for RDF and .ttf for Notation 3)
+   * Where *Packages_file* is the file that contains the linux files supposed to populate the ontology
+   * *rdf_or_n3* is the type of file to be generated (Should be replaced by rdf or n3)
+   * *Output_file* is the file to be generated, *without* the extension. (The program generates .owl files for RDF and .ttf for Notation 3)
 
 To run the reasoner.py file:
 ```
