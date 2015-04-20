@@ -55,7 +55,7 @@ def create_packages_instances(f_obj, owl_obj, t):
     packages = set()
     used_packages = set()
     for p in pkgs:
-        if i < 100:
+        if i < 100000000:
             print('processing pack: '+str(i))
             i += 1
             packages.add(p)

@@ -188,7 +188,7 @@ while not correct_action:
         correct_action = True
 
     else:
-        print(' Invalid option! Your answer should be between 1 and 6.')
+        print(' Invalid option! Your answer should be between 1 and 8.')
         action = input(' Option: ')
 output_file = input(' Output file: ')
 try:
