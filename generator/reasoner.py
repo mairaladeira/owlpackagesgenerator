@@ -48,7 +48,7 @@ print('\n\n Select the desired reasoner:')
 print(' 1) Get the packages from the DEBIAN COMMUNITY type')
 print(' 2) Get the packages from the WINDOW MANAGER type')
 print(' 3) Get the CONFLICTS of a given package')
-print(' 4) Get the DEPENDENCIES on a given package')
+print(' 4) Get the list of packages that DEPENDS of a given package')
 print(' 5) Get the SUGGESTIONS of a given package')
 print(' 6) Get the RECOMMENDATIONS of a given package')
 print(' 7) Get the packages PROVIDED by a given package')
@@ -96,16 +96,16 @@ while not correct_action:
         query_file.close()
         correct_action = True
     elif action == 4:
-        pack = input(' Package to extract the Dependencies from: ')
+        pack = input(' Package to extract the dependent packages from: ')
         pack = pack.split('(')
         pack = pack[0].split('<')
         pack = pack[0].split('|')
         pack = pack[0].replace('/', '_or_').replace('+', '_').replace('>', '').replace('"', '').replace("'", "") \
                       .replace('~', '').replace('.', '_').strip().replace(' ', '_').replace('&', '_and_')
-        query += 'SELECT ?dependencies\n'
+        query += 'SELECT ?dependents\n'
         query += 'WHERE {\n'
-        query += '\turl:'+pack+' a url:debianPackage.\n'
-        query += '\turl:'+pack+' url:depends ?dependencies.\n'
+        query += '\t?dependents a url:debianPackage.\n'
+        query += '\t?dependents url:depends url:'+pack+'.\n'
         query += '}'
         query_file = open('query_temp_depends', 'w+')
         query_file_name = 'query_temp_depends'
