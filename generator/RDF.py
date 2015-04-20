@@ -1,5 +1,4 @@
 __author__ = 'Maira'
-from html import escape
 
 
 class RDF:

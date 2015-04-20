@@ -278,7 +278,7 @@ if __name__ == "__main__":
     if len(sys.argv) == 1:
         print('-----------------------------------------------------------------')
         print('-----------------------------------------------------------------')
-        print(' Welcome to the OWL package generator.')
+        print(' Welcome to the Ontology package\'s generator.')
         print(' Please inform the name of your Packages\' file with its path.')
         print(' It is really important to have the correct path for your file.')
         file_path = input(" Packages' file: ")

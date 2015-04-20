@@ -1,7 +1,7 @@
 import os
-import subprocess
+import platform
 import re
-import sys
+
 
 __author__ = 'Maira'
 file_path = os.path.abspath(os.path.dirname(__file__))
@@ -51,6 +51,8 @@ print(' 3) Get the CONFLICTS of a given package')
 print(' 4) Get the DEPENDENCIES on a given package')
 print(' 5) Get the SUGGESTIONS of a given package')
 print(' 6) Get the RECOMMENDATIONS of a given package')
+print(' 7) Get the packages PROVIDED by a given package')
+print(' 8) Get the list of the conflicts given a list of packages to install')
 action = input(' Option: ')
 correct_action = False
 while not correct_action:
@@ -144,14 +146,60 @@ while not correct_action:
         query_file.write(query)
         query_file.close()
         correct_action = True
+    elif action == 7:
+        pack = input(' Package to extract the provided packages from: ')
+        pack = pack.split('(')
+        pack = pack[0].split('<')
+        pack = pack[0].split('|')
+        pack = pack[0].replace('/', '_or_').replace('+', '_').replace('>', '').replace('"', '').replace("'", "") \
+                      .replace('~', '').replace('.', '_').strip().replace(' ', '_').replace('&', '_and_')
+        query += 'SELECT ?provided_packages\n'
+        query += 'WHERE {\n'
+        query += '\turl:'+pack+' a url:debianPackage.\n'
+        query += '\turl:'+pack+' url:provides ?provided_packages.\n'
+        query += '}'
+        query_file = open('query_temp_provides', 'w+')
+        query_file_name = 'query_temp_provides'
+        query_file.write(query)
+        query_file.close()
+        correct_action = True
+    elif action == 8:
+        packs = input(' Give the list of packages to extract the conflicts from separated by ,: ')
+        packs = packs.split(',')
+        packs_list = []
+        for pack in packs:
+            pack = pack.split('(')
+            pack = pack[0].split('<')
+            pack = pack[0].split('|')
+            pack = pack[0].replace('/', '_or_').replace('+', '_').replace('>', '').replace('"', '').replace("'", "") \
+                          .replace('~', '').replace('.', '_').strip().replace(' ', '_').replace('&', '_and_')
+            packs_list.append('url:'+pack)
+        packs = ', '.join(packs_list)
+        query += 'SELECT ?possible_conflicts\n'
+        query += 'WHERE {\n'
+        query += '\t?p a url:debianPackage.\n'
+        query += '\t?p url:conflicts ?possible_conflicts.\n'
+        query += '\tFILTER(?p in ('+packs+')).\n'
+        query += '}'
+        query_file = open('query_temp_conflict_multiple', 'w+')
+        query_file_name = 'query_temp_conflict_multiple'
+        query_file.write(query)
+        query_file.close()
+        correct_action = True
+
     else:
         print(' Invalid option! Your answer should be between 1 and 6.')
         action = input(' Option: ')
 output_file = input(' Output file: ')
 try:
-    command = "./pellet.sh query -v -input-format "+onto_type+" -q "
-    command += file_path+"/"+query_file_name+" "+file_path+"/"+r_file.strip()
-    command += " > "+file_path+"/"+output_file
+    if platform.system() == 'Windows':
+        command = "./pellet.bat query -v -input-format "+onto_type+" -q "
+        command += file_path+"/"+query_file_name+" "+file_path+"/"+r_file.strip()
+        command += " > "+file_path+"/"+output_file
+    else:
+        command = "./pellet.sh query -v -input-format "+onto_type+" -q "
+        command += file_path+"/"+query_file_name+" "+file_path+"/"+r_file.strip()
+        command += " > "+file_path+"/"+output_file
     print(' Executing command: '+command)
     print(' Be patient this process takes a while.')
     print('----------------------------------------------------------------------------')
