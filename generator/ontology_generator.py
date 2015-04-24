@@ -45,7 +45,7 @@ def read_package(f_obj):
     return packages_d
 
 
-def create_packages_instances(f_obj, owl_obj, t):
+def create_packages_instances(f_obj, owl_obj, t, limit):
     pkgs = read_package(f_obj)
     print(str(len(pkgs))+' packages generated')
     print('creating ontology instances...')
@@ -55,7 +55,7 @@ def create_packages_instances(f_obj, owl_obj, t):
     packages = set()
     used_packages = set()
     for p in pkgs:
-        if i < 100000000:
+        if i < limit:
             print('processing pack: '+str(i))
             i += 1
             packages.add(p)
@@ -70,6 +70,11 @@ def create_packages_instances(f_obj, owl_obj, t):
                 for m in maintainers_list:
                     m_name = m[0]
                     m_email = m[1]
+                    if not re.search('debian(.+?)team', m_name.lower()):
+                        debian_community = False
+                    else:
+                        m_name = 'Debian Community'
+                        debian_community = False
                     if t == 'n3':
                         package_maintainers.append(m_name)
                     if m_name not in maintainers:
@@ -80,8 +85,6 @@ def create_packages_instances(f_obj, owl_obj, t):
                         maintainers[m_name].add(m_email)
                     if t == 'rdf':
                         package_properties.append(['hasMaintainer', 'resource', m_name])
-                    if 'debian' not in m_name.lower():
-                        debian_community = False
                 if debian_community:
                     p_type.append('debianCommunity')
                 if t == 'n3':
@@ -94,8 +97,13 @@ def create_packages_instances(f_obj, owl_obj, t):
                     arch = [p_content['Architecture']]
                 package_properties.append(['hasArchitecture', 'resource', arch])
             if 'Description' in p_content:
-                if 'window manager' in p_content['Description'].lower():
-                    p_type.append('windowManager')
+                test = re.search('window(.+?)manager', p_content['Description'].lower())
+                if test:
+                    #p_type.append('windowManager')
+                    p_content['Description'] = 'Window Manager'
+                    print('----------------')
+                    print(p)
+                    print('----------------')
                 if t == 'rdf':
                     desc = p_content['Description']
                 else:
@@ -172,6 +180,11 @@ def create_packages_instances(f_obj, owl_obj, t):
                     for m in maintainers_list:
                         m_name = m[0]
                         m_email = m[1]
+                        if not re.search('debian(.+?)team', m_name.lower()):
+                            debian_community = False
+                        else:
+                            m_name = 'Debian Community'
+                            debian_community = False
                         if t == 'n3':
                             package_maintainers.append(m_name)
                         if m_name not in maintainers:
@@ -182,8 +195,6 @@ def create_packages_instances(f_obj, owl_obj, t):
                             maintainers[m_name].add(m_email)
                         if t == 'rdf':
                             package_properties.append(['hasMaintainer', 'resource', m_name])
-                        if 'debian' not in m_name.lower():
-                            debian_community = False
                     if debian_community:
                         p_type.append('debianCommunity')
                     if t == 'n3':
@@ -194,13 +205,18 @@ def create_packages_instances(f_obj, owl_obj, t):
                 else:
                     arch = [p_content['Architecture']]
                 package_properties.append(['hasArchitecture', 'resource', arch])
+                wm = re.search('window(.+?)manager', p_content['Description'].lower())
+                if wm:
+                    #p_type.append('windowManager')
+                    p_content['Description'] = 'Window Manager'
+                    print('----------------')
+                    print(p)
+                    print('----------------')
                 if t == 'rdf':
                     desc = p_content['Description']
                 else:
                     desc = [p_content['Description']]
                 package_properties.append(['description', 'datatype', desc, 'string'])
-                if 'window manager' in p_content['Description'].lower():
-                    p_type.append('windowManager')
                 if t == 'rdf':
                     ver = p_content['Version']
                 else:
@@ -262,15 +278,15 @@ def format_maintainer(maintainer):
     return maintainers_list
 
 
-def main(f_obj, file_type, result_file):
+def main(f_obj, file_type, result_file, l=100000000):
     start_time = time.time()
     if file_type == 1:
         rdf_structure = RDF(result_file, result_file+'.owl')
-        create_packages_instances(f_obj, rdf_structure, 'rdf')
+        create_packages_instances(f_obj, rdf_structure, 'rdf', l)
         rdf_structure.end_rdf()
     elif file_type == 2:
         n3_structure = Notation3(result_file, result_file+'.ttl')
-        create_packages_instances(f_obj, n3_structure, 'n3')
+        create_packages_instances(f_obj, n3_structure, 'n3', l)
         n3_structure.end_notation3()
     print("--- %s seconds ---" % (time.time() - start_time))
 
@@ -306,7 +322,7 @@ if __name__ == "__main__":
         args = sys.argv
         if args[1] != '-p' or args[3] != '-t' or args[5] != '-o':
             print(' Wrong arguments instantiation.')
-            print(' Correct use: python ontology_generator.py -p <Packages_file> -t <rdf_or_n3> -o <Output_file>')
+            print(' Correct use: python ontology_generator.py -p <Packages_file> -t <rdf_or_n3> -o <Output_file> -l <Limit_of_Packages>')
             sys.exit()
         try:
             f = open(args[2])
@@ -326,4 +342,9 @@ if __name__ == "__main__":
             print(' Output file is mandatory!')
             print(' Correct use: python ontology_generator.py -p <Packages_file> -t <rdf_or_n3> -o <Output_file>')
             sys.exit()
-    main(f, int(f_type), output_file)
+        limit = 100000000
+        if '-l' in args:
+
+            l_index = args.index('-l')+1
+            limit = args[l_index]
+    main(f, int(f_type), output_file, limit)

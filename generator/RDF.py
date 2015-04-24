@@ -13,11 +13,13 @@ class RDF:
         self.o_property = ''
         self.dt_property = ''
         self.classes = ''
+        self.rules = ''
         self.start_rdf()
         self.start_ontology()
         self.declare_object_properties()
         self.declare_data_type_property()
         self.declare_classes()
+        self.declare_rules()
         self.file = open(self.output_file, 'w+')
         self.file.write(self.rdf)
         self.file.write(self.o_property)
@@ -31,7 +33,10 @@ class RDF:
         """
         self.rdf += '<?xml version="1.0"?>\n\n\n'
         self.rdf += '<!DOCTYPE rdf:RDF [\n'
+        self.rdf += '\t<!ENTITY swrl "http://www.w3.org/2003/11/swrl#" >\n'
+        self.rdf += '\t<!ENTITY swrlb "http://www.w3.org/2003/11/swrlb#" >\n'
         self.rdf += '\t<!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >\n'
+        self.rdf += '\t<!ENTITY xml "http://www.w3.org/XML/1998/namespace" >\n'
         self.rdf += '\t<!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >\n'
         self.rdf += '\t<!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >\n'
         self.rdf += '\t<!ENTITY '+self.namespace+' "'+self.url+self.namespace+'.owl#" >\n'
@@ -40,10 +45,13 @@ class RDF:
     def start_ontology(self):
         self.rdf += '<rdf:RDF xmlns="http://www.w3.org/2002/07/owl#"\n'
         self.rdf += '\txml:base="http://www.w3.org/2002/07/owl"\n'
-        self.rdf += '\txmlns:'+self.namespace+'="'+self.url+self.namespace+'.owl#"\n'
         self.rdf += '\txmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"\n'
+        self.rdf += '\txmlns:swrl="http://www.w3.org/2003/11/swrl#"\n'
+        self.rdf += '\txmlns:'+self.namespace+'="'+self.url+self.namespace+'.owl#"\n'
         self.rdf += '\txmlns:xsd="http://www.w3.org/2001/XMLSchema#"\n'
-        self.rdf += '\txmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">\n'
+        self.rdf += '\txmlns:swrlb="http://www.w3.org/2003/11/swrlb#"\n'
+        self.rdf += '\txmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"\n'
+        self.rdf += '\txmlns:xml="http://www.w3.org/XML/1998/namespace">\n'
         self.rdf += '\t<Ontology rdf:about="http://www.semanticweb.org/ontologies/2015/3/'+self.namespace+'.owl"/>\n\n\n\n'
 
     def end_rdf(self):
@@ -51,6 +59,7 @@ class RDF:
         Ends the ontology and saves it on the output file
         """
         print('generating OWL ontology file...')
+        self.file.write(self.rules)
         self.file.write('</rdf:RDF>')
         self.file.close()
         print('RDF ontology file generated!')
@@ -219,7 +228,7 @@ class RDF:
         ind = ind[0].split('<')
         ind = ind[0].split('|')
         ind = ind[0].replace('/', '_or_').replace('+', '_').replace('"', '').replace("'", "") \
-            .replace('~', '').replace('.', '_').strip().replace(' ', '_').replace('&', '_and_')
+            .replace('~', '').replace('.', '_').strip().replace(' ', '_').replace('&', '_and_').replace('__', '_')
         ind = ind.replace('\u00a1', 'a').replace('\u00b1', '').replace('\u00c3', 'n')
         if ind == '':
             return
@@ -235,7 +244,7 @@ class RDF:
             val = val[0].split('|')
             val = val[0].replace('/', '_or_').replace('+', '_').replace('"', '').replace("'", "") \
                 .replace('~', '').replace('.', '_').strip().replace(' ', '_').replace('&', '_and_')
-            val = val.replace('\u00a1', 'a').replace('\u00b1', '').replace('\u00c3', 'n')
+            val = val.replace('\u00a1', 'a').replace('\u00b1', '').replace('\u00c3', 'n').replace('__', '_')
 
             if p[1] == 'datatype':
                 named_individual += '\t\t<'+self.namespace+':'+name+' ' \
@@ -245,3 +254,102 @@ class RDF:
                                     'rdf:resource="&'+self.namespace+';'+val+'"/>\n'
         named_individual += '\t</NamedIndividual>\n\n\n'
         self.file.write(named_individual)
+
+    def declare_rules(self):
+        """
+        :return:
+        """
+        self.rules += '\t<swrl:Variable rdf:about="urn:swrl#x"/>\n'
+        self.rules += '\t<swrl:Variable rdf:about="urn:swrl#y"/>\n'
+        self.rules += '\t<swrl:Imp>\n'
+        self.rules += '\t\t<swrl:body>\n'
+        self.rules += '\t\t\t<swrl:AtomList>\n'
+        self.rules += '\t\t\t\t<rdf:rest>\n'
+        self.rules += '\t\t\t\t\t<swrl:AtomList>\n'
+        self.rules += '\t\t\t\t\t\t<rdf:rest rdf:resource="&rdf;nil"/>\n'
+        self.rules += '\t\t\t\t\t\t<rdf:first>\n'
+        self.rules += '\t\t\t\t\t\t\t<swrl:IndividualPropertyAtom>\n'
+        self.rules += '\t\t\t\t\t\t\t\t<swrl:argument2 rdf:resource="&'+self.namespace+';Debian_Community"/>\n'
+        self.rules += '\t\t\t\t\t\t\t\t<swrl:propertyPredicate rdf:resource="&'+self.namespace+';hasMaintainer"/>\n'
+        self.rules += '\t\t\t\t\t\t\t\t<swrl:argument1 rdf:resource="urn:swrl#x"/>\n'
+        self.rules += '\t\t\t\t\t\t\t</swrl:IndividualPropertyAtom>\n'
+        self.rules += '\t\t\t\t\t\t</rdf:first>\n'
+        self.rules += '\t\t\t\t\t</swrl:AtomList>\n'
+        self.rules += '\t\t\t\t</rdf:rest>\n'
+        self.rules += '\t\t\t\t<rdf:first>\n'
+        self.rules += '\t\t\t\t\t<swrl:ClassAtom>\n'
+        self.rules += '\t\t\t\t\t\t<swrl:classPredicate rdf:resource="&'+self.namespace+';debianPackage"/>\n'
+        self.rules += '\t\t\t\t\t\t<swrl:argument1 rdf:resource="urn:swrl#x"/>\n'
+        self.rules += '\t\t\t\t\t</swrl:ClassAtom>\n'
+        self.rules += '\t\t\t\t</rdf:first>\n'
+        self.rules += '\t\t\t</swrl:AtomList>\n'
+        self.rules += '\t\t</swrl:body>\n'
+        self.rules += '\t\t<swrl:head>\n'
+        self.rules += '\t\t\t<swrl:AtomList>\n'
+        self.rules += '\t\t\t\t<rdf:rest rdf:resource="&rdf;nil"/>\n'
+        self.rules += '\t\t\t\t<rdf:first>\n'
+        self.rules += '\t\t\t\t\t<swrl:ClassAtom>\n'
+        self.rules += '\t\t\t\t\t\t<swrl:classPredicate rdf:resource="&'+self.namespace+';debianCommunity"/>\n'
+        self.rules += '\t\t\t\t\t\t<swrl:argument1 rdf:resource="urn:swrl#x"/>\n'
+        self.rules += '\t\t\t\t\t</swrl:ClassAtom>\n'
+        self.rules += '\t\t\t\t</rdf:first>\n'
+        self.rules += '\t\t\t</swrl:AtomList>\n'
+        self.rules += '\t\t</swrl:head>\n'
+        self.rules += '\t</swrl:Imp>\n'
+        self.rules += '\t<swrl:Imp>\n'
+        self.rules += '\t\t<swrl:body>\n'
+        self.rules += '\t\t\t<swrl:AtomList>\n'
+        self.rules += '\t\t\t\t<rdf:rest>\n'
+        self.rules += '\t\t\t\t\t<swrl:AtomList>\n'
+        self.rules += '\t\t\t\t\t\t<rdf:first>\n'
+        self.rules += '\t\t\t\t\t\t\t<swrl:DatavaluedPropertyAtom>\n'
+        self.rules += '\t\t\t\t\t\t\t\t<swrl:propertyPredicate rdf:resource="&'+self.namespace+';description"/>\n'
+        self.rules += '\t\t\t\t\t\t\t\t<swrl:argument1 rdf:resource="urn:swrl#x"/>\n'
+        self.rules += '\t\t\t\t\t\t\t\t<swrl:argument2 rdf:resource="urn:swrl#y"/>\n'
+        self.rules += '\t\t\t\t\t\t\t</swrl:DatavaluedPropertyAtom>\n'
+        self.rules += '\t\t\t\t\t\t</rdf:first>\n'
+        self.rules += '\t\t\t\t\t\t<rdf:rest>\n'
+        self.rules += '\t\t\t\t\t\t\t<swrl:AtomList>\n'
+        self.rules += '\t\t\t\t\t\t\t\t<rdf:rest rdf:resource="&rdf;nil"/>\n'
+        self.rules += '\t\t\t\t\t\t\t\t<rdf:first>\n'
+        self.rules += '\t\t\t\t\t\t\t\t\t<swrl:BuiltinAtom>\n'
+        self.rules += '\t\t\t\t\t\t\t\t\t\t<swrl:builtin rdf:resource="&swrlb;containsIgnoreCase"/>\n'
+        self.rules += '\t\t\t\t\t\t\t\t\t\t<swrl:arguments>\n'
+        self.rules += '\t\t\t\t\t\t\t\t\t\t\t<rdf:Description>\n'
+        self.rules += '\t\t\t\t\t\t\t\t\t\t\t\t<rdf:type rdf:resource="&rdf;List"/>\n'
+        self.rules += '\t\t\t\t\t\t\t\t\t\t\t\t<rdf:first rdf:resource="urn:swrl#y"/>\n'
+        self.rules += '\t\t\t\t\t\t\t\t\t\t\t\t<rdf:rest>\n'
+        self.rules += '\t\t\t\t\t\t\t\t\t\t\t\t\t<rdf:Description>\n'
+        self.rules += '\t\t\t\t\t\t\t\t\t\t\t\t\t\t<rdf:type rdf:resource="&rdf;List"/>\n'
+        self.rules += '\t\t\t\t\t\t\t\t\t\t\t\t\t\t<rdf:first>window_manager</rdf:first>\n'
+        self.rules += '\t\t\t\t\t\t\t\t\t\t\t\t\t\t<rdf:rest rdf:resource="&rdf;nil"/>\n'
+        self.rules += '\t\t\t\t\t\t\t\t\t\t\t\t\t</rdf:Description>\n'
+        self.rules += '\t\t\t\t\t\t\t\t\t\t\t\t</rdf:rest>\n'
+        self.rules += '\t\t\t\t\t\t\t\t\t\t\t</rdf:Description>\n'
+        self.rules += '\t\t\t\t\t\t\t\t\t\t</swrl:arguments>\n'
+        self.rules += '\t\t\t\t\t\t\t\t\t</swrl:BuiltinAtom>\n'
+        self.rules += '\t\t\t\t\t\t\t\t</rdf:first>\n'
+        self.rules += '\t\t\t\t\t\t\t</swrl:AtomList>\n'
+        self.rules += '\t\t\t\t\t\t</rdf:rest>\n'
+        self.rules += '\t\t\t\t\t</swrl:AtomList>\n'
+        self.rules += '\t\t\t\t</rdf:rest>\n'
+        self.rules += '\t\t\t\t<rdf:first>\n'
+        self.rules += '\t\t\t\t\t<swrl:ClassAtom>\n'
+        self.rules += '\t\t\t\t\t\t<swrl:classPredicate rdf:resource="&'+self.namespace+';debianPackage"/>\n'
+        self.rules += '\t\t\t\t\t\t<swrl:argument1 rdf:resource="urn:swrl#x"/>\n'
+        self.rules += '\t\t\t\t\t</swrl:ClassAtom>\n'
+        self.rules += '\t\t\t\t</rdf:first>\n'
+        self.rules += '\t\t\t</swrl:AtomList>\n'
+        self.rules += '\t\t</swrl:body>\n'
+        self.rules += '\t\t<swrl:head>\n'
+        self.rules += '\t\t\t<swrl:AtomList>\n'
+        self.rules += '\t\t\t\t<rdf:rest rdf:resource="&rdf;nil"/>\n'
+        self.rules += '\t\t\t\t<rdf:first>\n'
+        self.rules += '\t\t\t\t\t<swrl:ClassAtom>\n'
+        self.rules += '\t\t\t\t\t\t<swrl:classPredicate rdf:resource="&'+self.namespace+';windowManager"/>\n'
+        self.rules += '\t\t\t\t\t\t<swrl:argument1 rdf:resource="urn:swrl#x"/>\n'
+        self.rules += '\t\t\t\t\t</swrl:ClassAtom>\n'
+        self.rules += '\t\t\t\t</rdf:first>\n'
+        self.rules += '\t\t\t</swrl:AtomList>\n'
+        self.rules += '\t\t</swrl:head>\n'
+        self.rules += '\t</swrl:Imp>\n'

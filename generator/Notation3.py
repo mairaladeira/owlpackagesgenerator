@@ -13,10 +13,12 @@ class Notation3:
         self.o_property = ''
         self.dt_property = ''
         self.classes = ''
+        self.rules = ''
         self.start_notation3()
         self.declare_object_properties()
         self.declare_data_type_properties()
         self.declare_classes()
+        self.declare_rule()
         self.file = open(self.output_file, 'w+')
         self.file.write(self.n3)
         self.file.write(self.o_property)
@@ -43,6 +45,7 @@ class Notation3:
         """
         :return:
         """
+        self.file.write(self.rules)
         self.file.close()
         print('Notation 3 ontology file generated!')
 
@@ -236,7 +239,7 @@ class Notation3:
         ind = ind[0].split('|')
         ind = ind[0].replace('/', '_or_').replace('+', '_').replace('"', '').replace("'", "") \
             .replace('~', '').replace('.', '_').strip().replace(' ', '_').replace('&', '_and_')
-        ind = ind.replace('\u00a1', 'a').replace('\u00b1', '').replace('\u00c3', 'n')
+        ind = ind.replace('\u00a1', 'a').replace('\u00b1', '').replace('\u00c3', 'n').replace('__', '_')
         if ind == '':
             return
         named_individual = '###  http://www.semanticweb.org/ontologies/2015/3/' + self.namespace + '.owl#' + ind + '\n\n'
@@ -262,7 +265,7 @@ class Notation3:
                 val = val[0].split('|')
                 val = val[0].replace('/', '_or_').replace('+', '_').replace('"', '').replace("'", "") \
                     .replace('~', '').replace('.', '_').strip().replace(' ', '_').replace('&', '_and_')
-                val = val.replace('\u00a1', 'a').replace('\u00b1', '').replace('\u00c3', 'n')
+                val = val.replace('\u00a1', 'a').replace('\u00b1', '').replace('\u00c3', 'n').replace('__', '_')
                 if prop_type == 'resource':
                     if i == 1:
                         named_individual += self.namespace + ':' + name + ' ' + self.namespace + ':' + val + ' '
@@ -283,3 +286,68 @@ class Notation3:
             j += 1
 
         self.file.write(named_individual)
+
+    def declare_rule(self):
+        """
+        :return:
+        """
+        self.rules += '<urn:swrl#x> rdf:type <http://www.w3.org/2003/11/swrl#Variable> .\n'
+        self.rules += '<urn:swrl#y> rdf:type <http://www.w3.org/2003/11/swrl#Variable> .\n'
+        self.rules += '[ rdf:type <http://www.w3.org/2003/11/swrl#Imp> ;\n'
+        self.rules += '\t<http://www.w3.org/2003/11/swrl#head> [ rdf:type <http://www.w3.org/2003/11/swrl#AtomList> ;\n'
+        self.rules += '\t\trdf:rest rdf:nil ;\n'
+        self.rules += '\t\trdf:first [ rdf:type <http://www.w3.org/2003/11/swrl#ClassAtom> ;\n'
+        self.rules += '\t\t\t<http://www.w3.org/2003/11/swrl#classPredicate> '+self.namespace+':windowManager ;\n'
+        self.rules += '\t\t\t<http://www.w3.org/2003/11/swrl#argument1> <urn:swrl#x>\n'
+        self.rules += '\t\t]\n'
+        self.rules += '\t] ;\n'
+        self.rules += '\t<http://www.w3.org/2003/11/swrl#body> [ rdf:type <http://www.w3.org/2003/11/swrl#AtomList> ;\n'
+        self.rules += '\t\t\trdf:rest [ rdf:type <http://www.w3.org/2003/11/swrl#AtomList> ;\n'
+        self.rules += '\t\t\t\nrdf:first [ rdf:type <http://www.w3.org/2003/11/swrl#DatavaluedPropertyAtom> ;'
+        self.rules += '\t\t\t\t<http://www.w3.org/2003/11/swrl#propertyPredicate> '+self.namespace+':description ;\n'
+        self.rules += '\t\t\t\t<http://www.w3.org/2003/11/swrl#argument1> <urn:swrl#x> ;\n'
+        self.rules += '\t\t\t\t<http://www.w3.org/2003/11/swrl#argument2> <urn:swrl#y>\n'
+        self.rules += '\t\t\t] ;\n'
+        self.rules += '\t\t\trdf:rest [ rdf:type <http://www.w3.org/2003/11/swrl#AtomList> ;\n'
+        self.rules += '\t\t\t\trdf:rest rdf:nil ;\n'
+        self.rules += '\t\t\t\trdf:first [ rdf:type <http://www.w3.org/2003/11/swrl#BuiltinAtom> ;\n'
+        self.rules += '\t\t\t\t\t<http://www.w3.org/2003/11/swrl#builtin> <http://www.w3.org/2003/11/swrlb#containsIgnoreCase> ;\n'
+        self.rules += '\t\t\t\t\t<http://www.w3.org/2003/11/swrl#arguments> [ rdf:type rdf:List ;\n'
+        self.rules += '\t\t\t\t\t\trdf:first <urn:swrl#y> ;\n'
+        self.rules += '\t\t\t\t\t\trdf:rest [ rdf:type rdf:List ;\n'
+        self.rules += '\t\t\t\t\t\t\trdf:first "window_manager" ;\n'
+        self.rules += '\t\t\t\t\t\t\trdf:rest rdf:nil\n'
+        self.rules += '\t\t\t\t\t\t]\n'
+        self.rules += '\t\t\t\t\t]\n'
+        self.rules += '\t\t\t\t]\n'
+        self.rules += '\t\t\t]\n'
+        self.rules += '\t\t] ;\n'
+        self.rules += '\t\trdf:first [ rdf:type <http://www.w3.org/2003/11/swrl#ClassAtom> ;\n'
+        self.rules += '\t\t\t<http://www.w3.org/2003/11/swrl#classPredicate> '+self.namespace+':debianPackage ;\n'
+        self.rules += '\t\t\t<http://www.w3.org/2003/11/swrl#argument1> <urn:swrl#x>\n'
+        self.rules += '\t\t]\n'
+        self.rules += '\t]\n'
+        self.rules += '] .\n'
+        self.rules += '[ rdf:type <http://www.w3.org/2003/11/swrl#Imp> ;\n'
+        self.rules += '\t<http://www.w3.org/2003/11/swrl#head> [ rdf:type <http://www.w3.org/2003/11/swrl#AtomList> ;\n'
+        self.rules += '\t\trdf:rest rdf:nil ;\n'
+        self.rules += '\t\trdf:first [ rdf:type <http://www.w3.org/2003/11/swrl#ClassAtom> ;\n'
+        self.rules += '\t\t\t<http://www.w3.org/2003/11/swrl#classPredicate> '+self.namespace+':debianCommunity ;\n'
+        self.rules += '\t\t\t<http://www.w3.org/2003/11/swrl#argument1> <urn:swrl#x>\n'
+        self.rules += '\t\t]\n'
+        self.rules += '\t] ;\n'
+        self.rules += '\t<http://www.w3.org/2003/11/swrl#body> [ rdf:type <http://www.w3.org/2003/11/swrl#AtomList> ;\n'
+        self.rules += '\t\trdf:first [ rdf:type <http://www.w3.org/2003/11/swrl#ClassAtom> ;\n'
+        self.rules += '\t\t\t<http://www.w3.org/2003/11/swrl#classPredicate> '+self.namespace+':debianPackage ;\n'
+        self.rules += '\t\t\t<http://www.w3.org/2003/11/swrl#argument1> <urn:swrl#x>\n'
+        self.rules += '\t\t] ;\n'
+        self.rules += '\t\trdf:rest [ rdf:type <http://www.w3.org/2003/11/swrl#AtomList> ;\n'
+        self.rules += '\t\t\trdf:rest rdf:nil ;\n'
+        self.rules += '\t\t\trdf:first [ rdf:type <http://www.w3.org/2003/11/swrl#IndividualPropertyAtom> ;\n'
+        self.rules += '\t\t\t\t<http://www.w3.org/2003/11/swrl#argument2> '+self.namespace+':Debian_Community ;\n'
+        self.rules += '\t\t\t\t<http://www.w3.org/2003/11/swrl#propertyPredicate> '+self.namespace+':hasMaintainer ;\n'
+        self.rules += '\t\t\t\t<http://www.w3.org/2003/11/swrl#argument1> <urn:swrl#x>\n'
+        self.rules += '\t\t\t]\n'
+        self.rules += '\t\t]\n'
+        self.rules += '\t]\n'
+        self.rules += '] .\n'
