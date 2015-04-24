@@ -1,0 +1,6 @@
+PREFIX url: <http://www.semanticweb.org/ontologies/2015/3/n3_ontology.owl#>
+SELECT ?conflicts
+WHERE {
+	url:libacl1 a url:debianPackage.
+	url:libacl1 url:conflicts ?conflicts.
+}

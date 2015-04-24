@@ -1,0 +1,6 @@
+PREFIX url: <http://www.semanticweb.org/ontologies/2015/3/n3_ontology.owl#>
+SELECT ?suggestions
+WHERE {
+	url:acpi-support a url:debianPackage.
+	url:acpi-support url:suggests ?suggestions.
+}

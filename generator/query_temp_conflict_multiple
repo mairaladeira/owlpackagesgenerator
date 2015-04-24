@@ -1,0 +1,8 @@
+PREFIX url: <http://www.semanticweb.org/ontologies/2015/3/rdf_ontology.owl#>
+SELECT DISTINCT ?pack1 ?pack2
+WHERE {
+	?pack1 a url:debianPackage.
+	?pack2 a url:debianPackage.
+	?pack1 url:conflicts ?pack2.
+	FILTER(?pack1 in (url:asterisk-mp3) && ?pack2 in (url:asterisk-mp3)).
+}

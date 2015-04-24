@@ -1,0 +1,6 @@
+PREFIX url: <http://www.semanticweb.org/ontologies/2015/3/n3_ontology.owl#>
+SELECT ?provided_packages
+WHERE {
+	url:libacr38u a url:debianPackage.
+	url:libacr38u url:provides ?provided_packages.
+}

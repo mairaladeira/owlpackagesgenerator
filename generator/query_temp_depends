@@ -1,0 +1,6 @@
+PREFIX url: <http://www.semanticweb.org/ontologies/2015/3/rdf_ontology.owl#>
+SELECT ?dependencies
+WHERE {
+	?dependencies a url:debianPackage.
+	url:asterisk-mp3 url:depends ?dependencies.
+}
