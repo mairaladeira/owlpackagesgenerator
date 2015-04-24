@@ -4,5 +4,5 @@ WHERE {
 	?pack1 a url:debianPackage.
 	?pack2 a url:debianPackage.
 	?pack1 url:conflicts ?pack2.
-	FILTER(?pack1 in (url:asterisk-mp3) && ?pack2 in (url:asterisk-mp3)).
+	FILTER(?pack1 in (url:asterisk-mp3, url:asterisk-mysql, url:tzdata, url:libc6, url:asterisk, url:libspeex1) && ?pack2 in (url:asterisk-mp3, url:asterisk-mysql, url:tzdata, url:libc6, url:asterisk, url:libspeex1)).
 }
