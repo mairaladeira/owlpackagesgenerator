@@ -1,4 +1,4 @@
-PREFIX url: <http://www.semanticweb.org/ontologies/2015/3/rdf_ontology.owl#>
+PREFIX url: <http://www.semanticweb.org/ontologies/2015/3/n3_test2.owl#>
 SELECT ?debian_community_packages
 WHERE {
 	?debian_community_packages a url:debianCommunity.

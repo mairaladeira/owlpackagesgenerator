@@ -70,7 +70,7 @@ def create_packages_instances(f_obj, owl_obj, t, limit):
                 for m in maintainers_list:
                     m_name = m[0]
                     m_email = m[1]
-                    if not re.search('debian(.+?)team', m_name.lower()):
+                    if not re.search('debian(.+?)team', m_name.lower()) and not re.search('debian', m_email.lower()):
                         debian_community = False
                     else:
                         m_name = 'Debian Community'
@@ -180,7 +180,7 @@ def create_packages_instances(f_obj, owl_obj, t, limit):
                     for m in maintainers_list:
                         m_name = m[0]
                         m_email = m[1]
-                        if not re.search('debian(.+?)team', m_name.lower()):
+                        if not re.search('debian(.+?)team', m_name.lower()) and not re.search('debian', m_email.lower()):
                             debian_community = False
                         else:
                             m_name = 'Debian Community'
@@ -291,6 +291,7 @@ def main(f_obj, file_type, result_file, l=100000000):
     print("--- %s seconds ---" % (time.time() - start_time))
 
 if __name__ == "__main__":
+    limit = 100000000
     if len(sys.argv) == 1:
         print('-----------------------------------------------------------------')
         print('-----------------------------------------------------------------')
@@ -310,11 +311,16 @@ if __name__ == "__main__":
         f_type = input(" Type of file: ")
         correct_type = False
         while not correct_type:
-            if int(f_type) == 1 or int(f_type) == 2:
-                correct_type = True
-            else:
+            try:
+                if int(f_type) == 1 or int(f_type) == 2:
+                    correct_type = True
+                else:
+                    print(' File type not available! Possible options: 1 - RDF, 2 - Notation 3 (turtle). Try Again..')
+                    f_type = input(" Type of file: ")
+            except:
                 print(' File type not available! Possible options: 1 - RDF, 2 - Notation 3 (turtle). Try Again..')
                 f_type = input(" Type of file: ")
+
         output_file = input(' Name of output file (the extension will be generated automatically): ')
         print('-----------------------------------------------------------------')
         print('-----------------------------------------------------------------')
@@ -342,7 +348,6 @@ if __name__ == "__main__":
             print(' Output file is mandatory!')
             print(' Correct use: python ontology_generator.py -p <Packages_file> -t <rdf_or_n3> -o <Output_file>')
             sys.exit()
-        limit = 100000000
         if '-l' in args:
 
             l_index = args.index('-l')+1

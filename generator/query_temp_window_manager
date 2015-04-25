@@ -1,4 +1,4 @@
-PREFIX url: <http://www.semanticweb.org/ontologies/2015/3/n3_ontology.owl#>
+PREFIX url: <http://www.semanticweb.org/ontologies/2015/3/rdf_ontology.owl#>
 SELECT ?window_manager_packages
 WHERE {
 	?window_manager_packages a url:windowManager.
